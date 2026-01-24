@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header>
+    <h1>Daily Health Log</h1>
+    <p>Enter today's stats to get AI advice.</p>
+</header>
+
+
+<form id="predictionForm">
+    <div class="form-container">
+        <div class="form-column">
+            <h3><i class="fas fa-user"></i> Profile</h3>
+            <div class="form-group"><label>Gender</label><select id="gender"><option value="1">Male</option><option value="0">Female</option></select></div>
+            <div class="form-group"><label>Age</label><input type="number" id="age" required></div>
+            <div class="form-group"><label>BMI</label><select id="bmi"><option value="0">Normal</option><option value="1">Overweight</option><option value="2">Obese</option></select></div>
+        </div>
+
+        <div class="form-column">
+            <h3><i class="fas fa-moon"></i> Sleep</h3>
+            <div class="form-group"><label>Duration (h)</label><input type="number" step="0.1" id="duration" required></div>
+            <div class="form-group"><label>Quality (1-10)</label><input type="number" id="quality" min="1" max="10" required></div>
+            <div class="form-group"><label>Stress (1-10)</label><input type="number" id="stress" min="1" max="10" required></div>
+            <div class="form-group"><label>Activity (m)</label><input type="number" id="activity" required></div>
+            <div class="form-group"><label>Daily Steps</label><input type="number" id="daily_steps" required></div>
+
+        </div>
+
+        <div class="form-column">
+            <h3><i class="fas fa-heartbeat"></i> Vitals</h3>
+            <div class="form-group"><label>Systolic BP</label><input type="number" id="bp_sys" placeholder="e.g. 120" required></div>
+            <div class="form-group"><label>Diastolic BP</label><input type="number" id="bp_dia" placeholder="e.g. 80" required></div>
+            <div class="form-group"><label>Heart Rate</label><input type="number" id="heart_rate" required></div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Log</button>
+</form>
+
+<div id="dailyTipBox" class="ai-box blue hidden">
+    <div class="ai-icon"><i class="fas fa-robot"></i></div>
+    <div class="ai-content">
+        <h3>AI Sleep Coach:</h3>
+        <p id="dailyTipText"></p>
+    </div>
+</div>
+
+<div id="weeklyBox" class="ai-box green hidden">
+    <div class="ai-icon"><i class="fas fa-user-md"></i></div>
+    <div class="ai-content">
+        <h3>Weekly Sleep Health Report</h3>
+        <p id="predictionResult" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Analyzing...</p>
+        <p id="weeklyAdvice" style="color: #2c3e50;">...</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-bed"></i> Sleep App</h2>
+                <p>Hello, {{ username }}</p>
+            </div>
+            
+            <ul class="nav-links">
+                <li>
+                    <a href="{{ url_for('home') }}" class="{{ 'active' if request.endpoint == 'home' else '' }}">
+                        <i class="fas fa-plus-circle"></i> Daily Entry
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('history') }}" class="{{ 'active' if request.endpoint == 'history' else '' }}">
+                        <i class="fas fa-history"></i> View History
+                    </a>
+                </li>
+            </ul>
+
+            <div class="logout-section" style="margin-top: auto;">
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

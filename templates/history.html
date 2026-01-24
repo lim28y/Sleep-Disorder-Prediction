@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="page-header">
+    <h1>Health Trends</h1>
+    <button id="toggleViewBtn" class="btn-toggle">
+        <i class="fas fa-chart-line"></i> View Graphs
+    </button>
+</header>
+
+<div id="historyGraph" class="hidden">
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Sleep Duration (Hrs)</h3>
+            <canvas id="chartDuration"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Sleep Quality (1-10)</h3>
+            <canvas id="chartQuality"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Stress Level (1-10)</h3>
+            <canvas id="chartStress"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Blood Pressure (mmHg)</h3>
+            <canvas id="chartBP"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Heart Rate (bpm)</h3>
+            <canvas id="chartHR"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Activity vs Steps</h3>
+            <canvas id="chartActivity"></canvas>
+        </div>
+    </div>
+</div>
+
+<div id="historyList" class="table-container">
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Sleep</th>
+                <th>Quality</th>
+                <th>Stress</th>
+                <th>Activity</th>
+                <th>Steps</th>
+                <th>Heart Rate</th>
+                <th>BP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td class="date-cell">{{ log.log_date }}</td>
+                <td><i class="fas fa-moon icon-blue"></i> {{ log.sleep_duration }}h</td>
+                <td><span class="badge badge-blue">{{ log.quality_sleep }}/10</span></td>
+                <td><span class="text-red">{{ log.stress_level }}/10</span></td>
+                <td>{{ log.activity_level }} min</td>
+                <td>{{ log.daily_steps }}</td>
+                <td><i class="fas fa-heartbeat icon-pink"></i> {{ log.heart_rate }}</td>
+                <td>{{ log.bp_systolic }}/{{ log.bp_diastolic }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="empty-cell">No logs found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const chartData = {{ logs | tojson | safe }};
+</script>
+{% endblock %}
