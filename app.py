@@ -68,7 +68,7 @@ def get_all_logs(user_id):
     # REMOVED "LIMIT 7" so it shows everything
     sql = """
         SELECT log_date, sleep_duration, quality_sleep, stress_level, 
-               activity_level, bp_systolic, bp_diastolic, heart_rate, daily_steps
+               activity_level, bp_systolic, bp_diastolic, heart_rate, daily_steps, daily_tip
         FROM user_sleep_data 
         WHERE user_id = %s 
         ORDER BY log_date DESC
@@ -188,6 +188,26 @@ def history():
                              
     return redirect(url_for('login'))
 
+@app.route('/weekly')
+def weekly():
+    if 'user_id' in session:
+        conn = get_db_connection()
+        monthly_data = []
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            sql = """
+                SELECT week_start_date, avg_sleep_duration, avg_quality, avg_stress, prediction_result 
+                FROM weekly_summaries 
+                WHERE user_id = %s 
+                ORDER BY created_at ASC 
+                LIMIT 8
+            """
+            cursor.execute(sql, (session['user_id'],))
+            monthly_data = cursor.fetchall()
+            conn.close()
+        return render_template('weekly.html', username=session['username'], monthly_data=monthly_data)
+    return redirect(url_for('login'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -240,19 +260,6 @@ def submit_log():
         try:
             cursor = conn.cursor(dictionary=True)
 
-            # 1. Insert Daily Log
-            insert_sql = """
-                INSERT INTO user_sleep_data 
-                (user_id, log_date, gender, age, sleep_duration, quality_sleep, 
-                 activity_level, stress_level, bmi_category, bp_systolic, bp_diastolic, 
-                 heart_rate, daily_steps)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            params = (user_id, data['date'], data['gender'], data['age'], data['duration'], data['quality'], 
-                      data['activity'], data['stress'], data['bmi'], data['bp_sys'], data['bp_dia'], 
-                      data['heart_rate'], data['daily_steps'])
-            cursor.execute(insert_sql, params)
-            conn.commit()
 
             # 2. Daily AI Advice (Always Run)
             current_log_data = {
@@ -269,6 +276,20 @@ def submit_log():
                 "weekly_ready": False,
                 "analysis": None
             }
+
+                        # 1. Insert Daily Log
+            insert_sql = """
+                INSERT INTO user_sleep_data 
+                (user_id, log_date, gender, age, sleep_duration, quality_sleep, 
+                 activity_level, stress_level, bmi_category, bp_systolic, bp_diastolic, 
+                 heart_rate, daily_steps,daily_tip)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            params = (user_id, data['date'], data['gender'], data['age'], data['duration'], data['quality'], 
+                      data['activity'], data['stress'], data['bmi'], data['bp_sys'], data['bp_dia'], 
+                      data['heart_rate'], data['daily_steps'], daily_tip)
+            cursor.execute(insert_sql, params)
+            conn.commit()
 
             # 3. 🟢 INTELLIGENT WEEKLY CHECK (Fixes Missing Reports)
             # Count total logs

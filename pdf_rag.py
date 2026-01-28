@@ -15,28 +15,23 @@ PDF_FOLDER = "knowledge_base"
 DB_PATH = "chroma_db"
 
 def setup_rag():
-    """
-    Checks if the Vector DB exists. If not, creates it from PDFs.
-    """
-    # 1. Check if DB already exists to avoid re-scanning every time (Speed Boost)
+    """ Checks if the Vector DB exists. If not, creates it from PDFs. """
     if os.path.exists(DB_PATH) and os.listdir(DB_PATH):
-        print(f"✅ Vector DB found at '{DB_PATH}'. Using existing knowledge.")
+        print(f"Vector DB found at '{DB_PATH}'. Using existing knowledge.")
         embeddings = OllamaEmbeddings(model="llama3.2")
         return Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
 
-    # 2. Check if PDF folder exists
     if not os.path.exists(PDF_FOLDER):
         os.makedirs(PDF_FOLDER)
-        print(f"⚠️ Created folder '{PDF_FOLDER}'. Please put your PDFs inside it.")
+        print(f"Created folder '{PDF_FOLDER}'. Please put your PDFs inside it.")
         return None
 
-    # 3. Load PDFs
     print(f"Scanning '{PDF_FOLDER}' for PDFs...")
     all_docs = []
     files = [f for f in os.listdir(PDF_FOLDER) if f.endswith('.pdf')]
     
     if not files:
-        print("❌ No PDF files found. RAG cannot work.")
+        print("No PDF files found. RAG cannot work.")
         return None
 
     for file_name in files:
@@ -50,7 +45,6 @@ def setup_rag():
     if not all_docs:
         return None
 
-    # 4. Process and Index
     print(f"Processing {len(all_docs)} pages...")
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = text_splitter.split_documents(all_docs)
@@ -63,51 +57,74 @@ def setup_rag():
         embedding=embeddings,
         persist_directory=DB_PATH
     )
-    print("✅ Knowledge Base Updated!")
+    print(" Knowledge Base Updated!")
     return vectorstore
 
 def ask_rag_advice(data, prediction_result):
     
-    # 1. Setup the Brain
     vectorstore = setup_rag()
     if not vectorstore:
-        return "System Tip: Please upload a PDF to the 'knowledge_base' folder to get AI advice."
+        return "System Tip: Please upload a PDF to the 'knowledge_base' folder."
 
+    # Temperature 0.3 keeps it strict (so it follows the format)
+    llm = ChatOllama(model="llama3.2", temperature=0.3)
+    
     retriever = vectorstore.as_retriever()
-    llm = ChatOllama(model="llama3.2", temperature=0.7)
-
-    # 2. Convert Data to Descriptive Text
+    
+    # 1. USER DATA BLOCK (Context for the AI)
     user_desc = (
-        f"The user is a {data['age']} year old {'Male' if int(data['gender'])==1 else 'Female'}.\n"
-        f"Current Status: {prediction_result}.\n"
-        f"Stats:\n"
-        f"- Sleep Duration: {data['duration']} hours (Low if < 7)\n"
+        f"PATIENT DATA:\n"
+        f"- Sleep Duration: {data['duration']} hours\n"
         f"- Sleep Quality: {data['quality']}/10\n"
-        f"- Stress Level: {data['stress']}/10 (High if > 5)\n"
+        f"- Stress Level: {data['stress']}/10\n"
         f"- Daily Steps: {data['daily_steps']}\n"
-        f"- Blood Pressure: {data['bp_sys']}/{data['bp_dia']}"
+        f"- Blood Pressure: {data['bp_sys']}/{data['bp_dia']}\n"
+        f"- Diagnosis: {prediction_result}\n"
     )
 
-    # 3. STRICT System Prompt to prevent hallucinations
+    # 2. THE "FORMATTING" PROMPT
+    # This instructs the AI to copy the exact style you want.
     system_prompt = (
-        "You are an empathetic, professional Sleep Health Coach. "
-        "Your goal is to give ONE practical tip based on the provided Context and the User's specific stats.\n\n"
-        
-        "ANALYSIS RULES:\n"
-        "1. Identify the user's WORST metric from the stats (e.g., Is stress high? Is sleep duration low?).\n"
-        "2. Retrieve advice from the Context that specifically targets that worst metric.\n"
-        "3. **CRITICAL:** If the user has NOT explicitly reported using alcohol, caffeine, or smoking, **DO NOT mention them**.\n"
-        "4. **FORMATTING:** Do NOT use citations like (ref: Context) or [1]. Write naturally.\n\n"
-        
-        "Context:\n{context}"
+        "You are 'SleepSync AI', a professional sleep coach.\n"
+        "Your goal is to analyze the Patient Data and provide advice using the specific format below.\n\n"
+
+        "RULES:\n"
+        "1. **Use Arrows:** When listing stats, use '→' to explain what the number means (e.g., '4 hours → Significantly below average').\n"
+        "2. **Be Specific:** Do not just say 'Sleep more.' Say 'Aim for 6 hours first.'\n"
+        "3. **Use the PDF:** Incorporate medical facts from the context if possible.\n\n"
+
+        "REQUIRED RESPONSE FORMAT:\n"
+        "🛌 Sleep Overview\n"
+        "- Sleep duration: [Value] → [Short Analysis]\n"
+        "- Sleep quality: [Value]/10 → [Short Analysis]\n"
+        "- Stress level: [Value]/10 → [Short Analysis]\n"
+        "💡 [One sentence summary of how these 3 things interact]\n\n"
+
+        "❤️ Physical Health Indicators\n"
+        "- Blood pressure: [Value] mmHg\n"
+        "  [Bullet point explaining if this is high/normal]\n"
+        "- Daily steps: [Value]\n"
+        "  [Bullet point explaining if this is sedentary/active]\n\n"
+
+        "Key Areas to Improve\n"
+        "1. **[Goal 1 Title]**\n"
+        "   [Specific advice based on PDF context]\n"
+        "2. **[Goal 2 Title]**\n"
+        "   [Specific advice based on PDF context]\n"
+        "3. **[Goal 3 Title]**\n"
+        "   [Specific advice based on PDF context]\n\n"
+
+        "Final Encouragement\n"
+        "[One motivating sentence]\n\n"
+
+        "MEDICAL CONTEXT:\n{context}"
     )
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
-        ("human", "User Data: {input}\n\nPlease provide a short, personalized sleep recommendation.")
+        ("human", "Patient Data:\n{input}")
     ])
 
-    # 4. Run the Chain
     question_answer_chain = create_stuff_documents_chain(llm, prompt)
     rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
@@ -118,50 +135,9 @@ def ask_rag_advice(data, prediction_result):
         return response["answer"]
     except Exception as e:
         print(f"RAG Error: {e}")
-        return "Sleep Tip: Try to maintain a consistent sleep schedule."
+        return "System Tip: Try to maintain a consistent sleep schedule."
 
 
-# --- TEST BLOCK ---
-if __name__ == "__main__":
-    print("--- 🧪 TESTING RAG SYSTEM ISOLATED ---")
-    
-    # 1. Fake Data (High Stress, Low Sleep)
-    fake_data = {
-        'age': 30, 'gender': 1, 'duration': 5, 'quality': 4,
-        'stress': 8, 'daily_steps': 3000, 'bp_sys': 120, 'bp_dia': 80
-    }
-    
-    # 2. Fake Prediction
-    fake_prediction = "Insomnia Detected"
-
-    # 3. Run
-    print(" Asking AI...")
-    result = ask_rag_advice(fake_data, fake_prediction)
-    
-    print("\n--- 🤖 AI RESPONSE ---")
-    print(result)
 
 
-# --- TEST BLOCK (Add this to the bottom) ---
-if __name__ == "__main__":
-    print("--- 🧪 TESTING RAG SYSTEM ISOLATED ---")
-    
-    # 1. Fake Data (Simulating what the App sends)
-    fake_data = {
-        'age': 30,
-        'gender': 1,       # Male
-        'duration': 5,     # Low sleep
-        'quality': 4,
-        'stress': 8,
-        'daily_steps': 3000
-    }
-    
-    # 2. Fake Prediction
-    fake_prediction = "Sleep Disorder Detected (Insomnia)"
 
-    # 3. Run the function
-    print(" Asking AI...")
-    result = ask_rag_advice(fake_data, fake_prediction)
-    
-    print("\n--- 🤖 AI RESPONSE ---")
-    print(result)

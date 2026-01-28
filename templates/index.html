@@ -3,7 +3,7 @@
 {% block content %}
 <header>
     <h1>Daily Health Log</h1>
-    <p>Enter today's stats to get AI advice.</p>
+    <p>Submit daily log to get AI advice.</p>
 </header>
 
 <form id="predictionForm">
@@ -109,11 +109,11 @@
 </div>
 
 <div id="weeklyBox" class="ai-box green hidden">
-    <div class="ai-icon"><i class="fas fa-user-md"></i></div>
+    <div class="ai-icon"><i class="fas fa-report"></i></div>
     <div class="ai-content">
         <h3>Weekly Sleep Health Report</h3>
         <p id="predictionResult" class="prediction-text">Analyzing...</p>
-        <p id="weeklyAdvice" class="advice-text">...</p>
+        <p id="weeklyAdvice" class="advice-text"></p>
     </div>
 </div>
 {% endblock %}
