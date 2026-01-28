@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if chronic_alert %}
+<div class="alert-banner">
+    <h3 class="alert-title">
+        <i class="fas fa-exclamation-triangle"></i> Health Alert
+    </h3>
+    <p class="alert-msg">
+        <strong>Action Required:</strong> Our analysis detects persistent <strong>Insomnia or Sleep Apnea</strong> patterns over the last 2 months (8 weeks). 
+        We strongly recommend consulting a medical professional.
+    </p>
+</div>
+{% endif %}
+
+
+<div style="margin-bottom: 50px;">
+    <h2 class="section-title">
+        <i class="fas fa-calendar-alt"></i> Weekly Summary
+    </h2>
+    
+    {% if monthly_data %}
+        <div class="table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Week Starting</th>
+                        <th>Avg Duration</th>
+                        <th>Avg Quality</th>
+                        <th>Avg Stress</th>
+                        <th>AI Prediction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in monthly_data %}
+                    <tr>
+                        <td class="date-cell">{{ week.week_start_date }}</td>
+                        <td>{{ week.avg_sleep_duration }} hrs</td>
+                        <td>
+                            <span class="{{ 'text-green' if week.avg_quality >= 5 else 'text-red' }}" style="font-weight:bold;">
+                                {{ week.avg_quality }}/10
+                            </span>
+                        </td>
+                        <td>{{ week.avg_stress }}/10</td>
+                        <td>
+                            {% if "Insomnia" in week.prediction_result or "Apnea" in week.prediction_result %}
+                                <span class="badge badge-danger">
+                                    {{ week.prediction_result }}
+                                </span>
+                            {% else %}
+                                <span class="badge badge-blue">
+                                    {{ week.prediction_result }}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-info-circle"></i> No weekly summaries yet. Log sleep for 7 days to generate your first weekly report!
+        </div>
+    {% endif %}
+</div>
+
+
+<header class="page-header">
+    <h2 class="section-title" style="margin-bottom:0; border:none; width:auto;">
+        <i class="fas fa-list-ul"></i> Daily Logs
+    </h2>
+    <button id="toggleViewBtn" class="btn-toggle">
+        <i class="fas fa-chart-line"></i> View Graphs
+    </button>
+</header>
+
+<div id="historyGraph" class="hidden">
+    <div class="charts-grid">
+        <div class="chart-card"><h3>Sleep Duration (Hrs)</h3><canvas id="chartDuration"></canvas></div>
+        <div class="chart-card"><h3>Sleep Quality (1-10)</h3><canvas id="chartQuality"></canvas></div>
+        <div class="chart-card"><h3>Stress Level (1-10)</h3><canvas id="chartStress"></canvas></div>
+        <div class="chart-card"><h3>Blood Pressure (mmHg)</h3><canvas id="chartBP"></canvas></div>
+        <div class="chart-card"><h3>Heart Rate (bpm)</h3><canvas id="chartHR"></canvas></div>
+        <div class="chart-card"><h3>Activity vs Steps</h3><canvas id="chartActivity"></canvas></div>
+    </div>
+</div>
+
+<div id="historyList" class="table-container">
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Date</th><th>Sleep</th><th>Quality</th><th>Stress</th>
+                <th>Activity</th><th>Steps</th><th>Heart Rate</th><th>BP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td class="date-cell">{{ log.log_date }}</td>
+                <td>{{ log.sleep_duration }}h</td>
+                <td>{{ log.quality_sleep }}/10</td>
+                <td>{{ log.stress_level }}/10</td>
+                <td>{{ log.activity_level }} min</td>
+                <td>{{ log.daily_steps }}</td>
+                <td>{{ log.heart_rate }}</td>
+                <td>{{ log.bp_systolic }}/{{ log.bp_diastolic }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="empty-cell">No daily logs found. Start tracking today!</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const chartData = {{ logs | tojson | safe }};
+</script>
+{% endblock %}
