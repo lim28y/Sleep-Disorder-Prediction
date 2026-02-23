@@ -35,6 +35,30 @@ The application integrates traditional Machine Learning with a local Large Langu
 4. **Weekly Recommendation Generation (LLM):**  Llama 3.2 model processes the user's 7-day metrics alongside the retrieved RAG context. It then generates a personalized, bulleted weekly sleep hygiene report to help the user maintain or improve their habits.
 5. **Visualization & Alerts:** The weekly prediction results, AI-generated advice, and historical health metrics are displayed on the interactive web dashboard. If a high-risk disorder is consistently predicted across multiple weeks, the system triggers a critical health alert.
 
+## User Interface
+**DAILY LOG INTERFACE**
+<img width="1919" height="934" alt="Daily Log Interface" src="https://github.com/user-attachments/assets/fcca688e-69af-4a7b-9b8b-0c27df48f6dd" />
+
+**AFTER LOG IS SUCCESSFULLY SUBMITTED**
+<img width="1722" height="943" alt="Not 7th Log" src="https://github.com/user-attachments/assets/040c6fe1-d371-4bea-8073-702fde369b6f" />
+
+**WEEKLY PREDICTION & RECOMMENDATION**
+<img width="1636" height="898" alt="Result and Recommendations" src="https://github.com/user-attachments/assets/088624a8-29af-4d5f-aae3-2172e9588933" />
+
+**DAILY LOG HISTORY (LIST)**
+<img width="1697" height="931" alt="History List" src="https://github.com/user-attachments/assets/ae99be5d-46f9-445e-80f1-d2d8750acada" />
+
+**DAILY LOG HISTORY (CHART)**
+<img width="1679" height="642" alt="History Chart" src="https://github.com/user-attachments/assets/1dd461cb-ce41-44ce-b954-4e80eea9b315" />
+
+**WEEKLY PROGRESS INTERFACE**
+<img width="1678" height="293" alt="Weeekly Progress" src="https://github.com/user-attachments/assets/5a847828-1952-4065-a8d8-5473da1e28f1" />
+
+**VIEW ADVICE BUTTON IS CLICKED**
+
+<img width="478" height="696" alt="image" src="https://github.com/user-attachments/assets/1c029a7f-607a-46f1-a7a4-13b6ce88ad5c" />
+
+
 ## 🚀 Installation & Setup
 To run this project locally, follow these steps:
 
