@@ -42,7 +42,7 @@ def check_chronic_alert(user_id):
     weeks = cursor.fetchall()
     conn.close()
 
-    if len(weeks) < 8: return False 
+    if len(weeks) < 2: return False 
 
     bad_count = 0
     for w in weeks:
@@ -50,7 +50,7 @@ def check_chronic_alert(user_id):
         if "Insomnia" in res or "Apnea" in res:
             bad_count += 1
             
-    return bad_count >= 6
+    return bad_count >= 2
 
 @app.context_processor
 def inject_alerts():
@@ -68,7 +68,7 @@ def get_all_logs(user_id):
     # REMOVED "LIMIT 7" so it shows everything
     sql = """
         SELECT log_date, sleep_duration, quality_sleep, stress_level, 
-               activity_level, bp_systolic, bp_diastolic, heart_rate, daily_steps, daily_tip
+               activity_level, bp_systolic, bp_diastolic, heart_rate, daily_steps
         FROM user_sleep_data 
         WHERE user_id = %s 
         ORDER BY log_date DESC
@@ -196,7 +196,7 @@ def weekly():
         if conn:
             cursor = conn.cursor(dictionary=True)
             sql = """
-                SELECT week_start_date, avg_sleep_duration, avg_quality, avg_stress, prediction_result 
+                SELECT week_start_date, avg_sleep_duration, avg_quality, avg_stress, prediction_result, sleep_tip 
                 FROM weekly_summaries 
                 WHERE user_id = %s 
                 ORDER BY created_at ASC 
@@ -260,36 +260,24 @@ def submit_log():
         try:
             cursor = conn.cursor(dictionary=True)
 
-
-            # 2. Daily AI Advice (Always Run)
-            current_log_data = {
-                'gender': data['gender'], 'age': data['age'], 'bmi': data['bmi'],
-                'duration': data['duration'], 'quality': data['quality'], 'stress': data['stress'],
-                'daily_steps': data['daily_steps'], 'heart_rate': data['heart_rate'],
-                'bp_sys': data['bp_sys'], 'bp_dia': data['bp_dia'], 'activity': data['activity']
-            }
-            daily_pred = run_prediction(current_log_data)
-            daily_tip = ask_rag_advice(current_log_data, daily_pred)
-
-            response_data = {
-                "daily_tip": daily_tip,
-                "weekly_ready": False,
-                "analysis": None
-            }
-
-                        # 1. Insert Daily Log
+        # 1. Insert Daily Log
             insert_sql = """
                 INSERT INTO user_sleep_data 
                 (user_id, log_date, gender, age, sleep_duration, quality_sleep, 
                  activity_level, stress_level, bmi_category, bp_systolic, bp_diastolic, 
-                 heart_rate, daily_steps,daily_tip)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 heart_rate, daily_steps)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             params = (user_id, data['date'], data['gender'], data['age'], data['duration'], data['quality'], 
                       data['activity'], data['stress'], data['bmi'], data['bp_sys'], data['bp_dia'], 
-                      data['heart_rate'], data['daily_steps'], daily_tip)
+                      data['heart_rate'], data['daily_steps'])
             cursor.execute(insert_sql, params)
             conn.commit()
+
+            response_data = {
+                "weekly_ready": False,
+                "analysis": None
+            }
 
             # 3. 🟢 INTELLIGENT WEEKLY CHECK (Fixes Missing Reports)
             # Count total logs
@@ -313,12 +301,13 @@ def submit_log():
                 
                 avg_data = calculate_weekly_average(recent_logs)
                 weekly_prediction = run_prediction(avg_data)
+                weekly_tip = ask_rag_advice(avg_data, weekly_prediction)
 
                 # Save to DB
                 save_sql = """
                     INSERT INTO weekly_summaries 
-                    (user_id, week_start_date, avg_sleep_duration, avg_quality, avg_stress, prediction_result)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    (user_id, week_start_date, avg_sleep_duration, avg_quality, avg_stress, prediction_result,sleep_tip)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
                 cursor.execute(save_sql, (
                     user_id, 
@@ -326,15 +315,18 @@ def submit_log():
                     avg_data['duration'], 
                     avg_data['quality'], 
                     avg_data['stress'], 
-                    weekly_prediction
+                    weekly_prediction,
+                    weekly_tip
                 ))
                 conn.commit()
 
                 response_data["weekly_ready"] = True
                 response_data["analysis"] = {
                     "prediction": weekly_prediction,
-                    "tips": "Weekly Summary Saved."
+                    "tips": weekly_tip
                 }
+
+                
             
             return jsonify(response_data)
 

@@ -1,34 +1,31 @@
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- PART 0: INITIALIZATION ---
     const dateInput = document.getElementById('logDate');
     if (dateInput) {
         dateInput.valueAsDate = new Date();
     }
     
-    // --- PART 1: CHART & TOGGLE LOGIC ---
+    // --- PART 1: CHART & TOGGLE LOGIC (Kept exactly as is) ---
     const toggleBtn = document.getElementById('toggleViewBtn');
     const listView = document.getElementById('historyList');
     const graphView = document.getElementById('historyGraph');
     let isGraphMode = false;
-    let charts = {}; // Store Chart Instances
+    let charts = {}; 
 
-    // Function to Draw All Charts
     function renderAllCharts() {
         if (typeof chartData === 'undefined' || chartData.length === 0) return;
-
-        // Prepare Data (Sort Oldest -> Newest)
         const data = [...chartData].reverse();
         const labels = data.map(log => {
             const d = new Date(log.log_date);
             return `${d.getDate()}/${d.getMonth()+1}`;
         });
 
-        // Helper to create a chart
         const createChart = (canvasId, label, datasetData, color, type='line') => {
             const canvas = document.getElementById(canvasId);
-            if (!canvas) return; // Safety check
-            
+            if (!canvas) return; 
             const ctx = canvas.getContext('2d');
-            if (charts[canvasId]) charts[canvasId].destroy(); // Destroy old chart
+            if (charts[canvasId]) charts[canvasId].destroy(); 
 
             charts[canvasId] = new Chart(ctx, {
                 type: type,
@@ -48,16 +45,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
-        // 1. Sleep Duration (Blue)
         createChart('chartDuration', 'Duration (hrs)', data.map(d => d.sleep_duration), '#3498db');
-        // 2. Sleep Quality (Purple)
         createChart('chartQuality', 'Quality (1-10)', data.map(d => d.quality_sleep), '#9b59b6');
-        // 3. Stress Level (Red)
         createChart('chartStress', 'Stress (1-10)', data.map(d => d.stress_level), '#e74c3c');
-        // 4. Heart Rate (Pink)
         createChart('chartHR', 'Heart Rate (bpm)', data.map(d => d.heart_rate), '#e91e63');
 
-        // 5. Blood Pressure (Double Line)
         const bpCanvas = document.getElementById('chartBP');
         if (bpCanvas) {
             const ctxBP = bpCanvas.getContext('2d');
@@ -75,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // 6. Activity vs Steps (Mixed)
         const actCanvas = document.getElementById('chartActivity');
         if (actCanvas) {
             const ctxAct = actCanvas.getContext('2d');
@@ -117,7 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Toggle Button Event Listener
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function() {
             isGraphMode = !isGraphMode;
@@ -125,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 listView.style.display = 'none';
                 graphView.style.display = 'block';
                 toggleBtn.innerHTML = '<i class="fas fa-list"></i> View List';
+                graphView.classList.remove('hidden'); 
                 renderAllCharts();
             } else {
                 listView.style.display = 'block';
@@ -134,12 +125,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- PART 2: FORM SUBMISSION LOGIC (This was missing!) ---
+ // --- PART 2: FORM SUBMISSION LOGIC ---
     const form = document.getElementById('predictionForm');
     
     if (form) {
         form.addEventListener('submit', async function(e) {
-            e.preventDefault(); // Stop page reload
+            e.preventDefault(); 
 
             // 1. Gather Data
             const data = {
@@ -158,7 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             try {
-                // 2. Send to Python
                 const response = await fetch('/submit_log', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -168,26 +158,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    // 3. Show Daily Tip
-                    const tipBox = document.getElementById('dailyTipBox');
-                    if (tipBox) {
-                        tipBox.classList.remove('hidden');
-                        document.getElementById('dailyTipText').innerText = result.daily_tip;
-                        tipBox.scrollIntoView({ behavior: 'smooth' });
+                    // 1. POPUP SUCCESS MESSAGE
+                    alert("The log has been saved successfully!");
+                
+                    const sleepTipBox = document.getElementById('sleepTipBox');
+                    const sleepTipText = document.getElementById('sleepTipText');
+                    const resultBox = document.getElementById('resultBox');
+                    const resultText = document.getElementById('predictionResult');
+                    const weeklyAdvice = document.getElementById('weeklyAdvice');
+
+                    // 2. Logic: Decide what to show
+                    if (sleepTipBox) {
+                        // Always show the Blue Box first (for status/advice)
+                        sleepTipBox.classList.remove('hidden');
+
+                        if (result.weekly_ready) {
+                            // === SCENARIO A: 7th Day (Report Ready) ===
+                            
+                            // Pink Box: Show the AI ADVICE
+                            if (sleepTipText) sleepTipText.innerText = result.analysis.tips;
+
+                            // Green Box: Show the PREDICTION
+                            if (resultBox) {
+                                resultBox.classList.remove('hidden');
+                                if (resultText) resultText.innerText = result.analysis.prediction;
+                                if (weeklyAdvice) weeklyAdvice.innerText = "Detailed advice is in the Pink Box above.";
+                            }
+
+                        } else {
+                            // === SCENARIO B: Days 1-6 (Normal Day) ===
+                            
+                            // Pink Box Message
+                            if (sleepTipText) {
+                                sleepTipText.innerHTML = "Keep logging! We need 7 days of data to generate your weekly sleep tips.";
+                            }
+                        
+                            // Green Box Message
+                            if (resultBox) {
+                                resultBox.classList.remove('hidden');
+                                if (resultText) resultText.innerHTML = "Keep logging! We need 7 days of data to generate your weekly prediction.";
+                                if (weeklyAdvice) weeklyAdvice.innerText = "";
+                            }
+                        } 
+
+                        // Scroll to the result so user sees it
+                        sleepTipBox.scrollIntoView({ behavior: 'smooth' });
                     }
 
-                    // 4. Show Weekly Analysis (if ready)
-                    if (result.weekly_ready) {
-                        const weeklyBox = document.getElementById('weeklyBox');
-                        if (weeklyBox) {
-                            weeklyBox.classList.remove('hidden');
-                            document.getElementById('predictionResult').innerText = result.analysis.prediction;
-                            document.getElementById('weeklyAdvice').innerText = result.analysis.tips;
-                        }
-                    }
-
-                    // 5. Clear form slightly to show success (optional)
-                    // form.reset(); 
                 } else {
                     alert("Error saving log: " + (result.error || "Unknown error"));
                 }
@@ -197,4 +214,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-});
+    });

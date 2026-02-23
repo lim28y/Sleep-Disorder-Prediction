@@ -12,19 +12,19 @@
     <div class="container">
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h2><i class="fas fa-bed"></i> Sleep Better</h2>
+                <h2><i class="fas fa-bed"></i> Sleep Tracker</h2>
                 <p>Hello, {{ username }}</p>
             </div>
             
             <ul class="nav-links">
                 <li>
                     <a href="{{ url_for('home') }}" class="{{ 'active' if request.endpoint == 'home' else '' }}">
-                        <i class="fas fa-plus-circle"></i> Daily Entry
+                        <i class="fas fa-plus-circle"></i> Daily Log
                     </a>
                 </li>
                 <li>
 <a href="{{ url_for('history') }}" class="{{ 'active' if request.endpoint == 'history' else '' }}">
-            <i class="fas fa-list-ul"></i> Daily Logs
+            <i class="fas fa-list-ul"></i> History
         </a>
     </li>
     <li>

@@ -8,12 +8,11 @@
         <i class="fas fa-exclamation-triangle"></i> Health Alert
     </h3>
     <p class="alert-msg">
-        <strong>Action Required:</strong> Our analysis detects persistent <strong>Insomnia or Sleep Apnea</strong> patterns over the last 2 months (8 weeks). 
+        <strong>Action Required:</strong> Our analysis detects persistent <strong>Insomnia or Sleep Apnea</strong> patterns over the last 2 weeks. 
         We strongly recommend consulting a medical professional.
     </p>
 </div>
 {% endif %}
-
 
 <div style="margin-bottom: 50px;">
     <h2 class="section-title">
@@ -29,30 +28,41 @@
                         <th style="background-color: #2c3e50;">Avg Duration</th>
                         <th style="background-color: #2c3e50;">Avg Quality</th>
                         <th style="background-color: #2c3e50;">Avg Stress</th>
-                        <th style="background-color: #2c3e50;">AI Prediction</th>
+                        <th style="background-color: #2c3e50;">Prediction Result</th>
+                        <th style="background-color: #2c3e50; text-align: center;">Details</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for week in monthly_data %}
                     <tr>
                         <td class="date-cell">{{ week.week_start_date }}</td>
+                        
                         <td>{{ week.avg_sleep_duration }} hrs</td>
+                        
                         <td>
                             <span class="{{ 'text-green' if week.avg_quality >= 5 else 'text-red' }}" style="font-weight:bold;">
                                 {{ week.avg_quality }}/10
                             </span>
                         </td>
+                        
                         <td>{{ week.avg_stress }}/10</td>
+
                         <td>
                             {% if "Insomnia" in week.prediction_result or "Apnea" in week.prediction_result %}
-                                <span class="badge badge-danger">
-                                    {{ week.prediction_result }}
-                                </span>
+                                <span class="badge badge-danger">{{ week.prediction_result }}</span>
                             {% else %}
-                                <span class="badge badge-blue">
-                                    {{ week.prediction_result }}
-                                </span>
+                                <span class="badge badge-blue">{{ week.prediction_result }}</span>
                             {% endif %}
+                        </td>
+
+                        <td style="text-align: center;">
+                            <button class="btn-view" onclick="openModal('{{ loop.index }}')">
+                                <i class="fas fa-eye"></i> View Advice
+                            </button>
+                            
+                            <div id="tip-content-{{ loop.index }}" style="display: none;">
+                                {{ week.sleep_tip }}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -61,9 +71,45 @@
         </div>
     {% else %}
         <div class="empty-state">
-            <i class="fas fa-info-circle"></i> No weekly summaries yet. Log sleep for 7 days to generate your first weekly report!
+            <i class="fas fa-info-circle"></i> No weekly summaries yet. Log sleep for 7 days to generate your first report!
         </div>
     {% endif %}
 </div>
+
+<div id="tipModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-md"></i> Sleep Tip</h3>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p id="modalText"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-close" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal(index) {
+        var tipContent = document.getElementById('tip-content-' + index).innerText;
+        document.getElementById('modalText').innerText = tipContent;
+        document.getElementById('tipModal').classList.add('active');
+        document.getElementById('tipModal').classList.remove('hidden'); 
+    }
+
+    function closeModal() {
+        document.getElementById('tipModal').classList.remove('active');
+        document.getElementById('tipModal').classList.add('hidden');
+    }
+
+    window.onclick = function(event) {
+        var modal = document.getElementById('tipModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
 
 {% endblock %}

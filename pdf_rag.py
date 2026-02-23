@@ -66,8 +66,8 @@ def ask_rag_advice(data, prediction_result):
     if not vectorstore:
         return "System Tip: Please upload a PDF to the 'knowledge_base' folder."
 
-    # Temperature 0.3 keeps it strict (so it follows the format)
-    llm = ChatOllama(model="llama3.2", temperature=0.3)
+    # Temperature 0.4 keeps it strict 
+    llm = ChatOllama(model="llama3.2", temperature=0.4)
     
     retriever = vectorstore.as_retriever()
     
@@ -82,8 +82,7 @@ def ask_rag_advice(data, prediction_result):
         f"- Diagnosis: {prediction_result}\n"
     )
 
-    # 2. THE "FORMATTING" PROMPT
-    # This instructs the AI to copy the exact style you want.
+    # 2. PROMPT
     system_prompt = (
         "You are 'SleepSync AI', a professional sleep coach.\n"
         "Your goal is to analyze the Patient Data and provide advice using the specific format below.\n\n"
@@ -93,25 +92,25 @@ def ask_rag_advice(data, prediction_result):
         "2. **Be Specific:** Do not just say 'Sleep more.' Say 'Aim for 6 hours first.'\n"
         "3. **Use the PDF:** Incorporate medical facts from the context if possible.\n\n"
 
-        "REQUIRED RESPONSE FORMAT:\n"
-        "🛌 Sleep Overview\n"
+        "RESPONSE FORMAT:\n"
+        "Sleep Overview\n"
         "- Sleep duration: [Value] → [Short Analysis]\n"
         "- Sleep quality: [Value]/10 → [Short Analysis]\n"
         "- Stress level: [Value]/10 → [Short Analysis]\n"
-        "💡 [One sentence summary of how these 3 things interact]\n\n"
+        "[One sentence summary of how these 3 things interact]\n\n"
 
-        "❤️ Physical Health Indicators\n"
+        "Physical Health Indicators\n"
         "- Blood pressure: [Value] mmHg\n"
         "  [Bullet point explaining if this is high/normal]\n"
         "- Daily steps: [Value]\n"
         "  [Bullet point explaining if this is sedentary/active]\n\n"
 
         "Key Areas to Improve\n"
-        "1. **[Goal 1 Title]**\n"
+        "1. [Goal 1 Title]\n"
         "   [Specific advice based on PDF context]\n"
-        "2. **[Goal 2 Title]**\n"
+        "2. [Goal 2 Title]\n"
         "   [Specific advice based on PDF context]\n"
-        "3. **[Goal 3 Title]**\n"
+        "3. [Goal 3 Title]\n"
         "   [Specific advice based on PDF context]\n\n"
 
         "Final Encouragement\n"

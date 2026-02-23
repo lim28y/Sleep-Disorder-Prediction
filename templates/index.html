@@ -2,8 +2,8 @@
 
 {% block content %}
 <header>
-    <h1>Daily Health Log</h1>
-    <p>Submit daily log to get AI advice.</p>
+    <h1>Daily Sleep Log</h1>
+    <p>Submit daily log to get AI-generated tip.</p>
 </header>
 
 <form id="predictionForm">
@@ -100,20 +100,26 @@
     <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Log</button>
 </form>
 
-<div id="dailyTipBox" class="ai-box blue hidden">
-    <div class="ai-icon"><i class="fas fa-robot"></i></div>
+<div id="resultBox" class="ai-box green hidden">
+    <div class="ai-icon"><i class="fas fa-file-medical-alt"></i></div>
     <div class="ai-content">
-        <h3>AI Sleep Coach:</h3>
-        <p id="dailyTipText"></p>
-    </div>
-</div>
-
-<div id="weeklyBox" class="ai-box green hidden">
-    <div class="ai-icon"><i class="fas fa-report"></i></div>
-    <div class="ai-content">
-        <h3>Weekly Sleep Health Report</h3>
-        <p id="predictionResult" class="prediction-text">Analyzing...</p>
+        <h3>Weekly Sleep Disorder Prediction Result:</h3>
+        <p id="predictionResult" class="prediction-text"></p>
         <p id="weeklyAdvice" class="advice-text"></p>
     </div>
 </div>
+
+<div id="sleepTipBox" class="ai-box pink hidden">
+    <div class="ai-icon"><i class="fas fa-robot"></i></div>
+    <div class="ai-content">
+        <h3>AI Sleep Coach:</h3>
+        <p id="sleepTipText"></p>
+    </div>
+</div>
+
+
+
+
+
+
 {% endblock %}

@@ -151,6 +151,7 @@ header p { color: #111212; margin-top: 5px; margin-bottom: 30px; }
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
+    margin-bottom: 50px;
 }
 .btn-save:hover { background: #34495e; transform: translateY(-2px); }
 
@@ -171,7 +172,7 @@ header p { color: #111212; margin-top: 5px; margin-bottom: 30px; }
     to { transform: translateY(0); opacity: 1; }
 }
 
-.ai-box.blue { background: linear-gradient(to right, #e3f2fd, #bbdefb); border-left: 6px solid #2196f3; }
+.ai-box.pink { background: linear-gradient(to right, #fef7ff, #f7c6f6); border-left: 6px solid #e091d7; }
 .ai-box.green { background: linear-gradient(to right, #e8f5e9, #c8e6c9); border-left: 6px solid #4caf50; }
 
 .ai-icon { font-size: 2rem; margin-right: 20px; opacity: 0.7; }
@@ -337,4 +338,121 @@ header p { color: #111212; margin-top: 5px; margin-bottom: 30px; }
     text-align: center; 
     color: #7f8c8d; 
     border: 1px dashed #bdc3c7;
+}
+
+/* --- WEEKLY REPORT TABLE & MODAL STYLES --- */
+
+/* View Button in Table */
+.btn-view {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+}
+.btn-view:hover {
+    background-color: #2980b9;
+}
+
+/* Modal Background Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Dark dim background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+/* Modal Active State (JavaScript toggles this) */
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Box Content */
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+/* Modal Header */
+.modal-header {
+    background: #2c3e50;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+/* Close 'X' Button */
+.close-btn {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #ddd;
+}
+.close-btn:hover {
+    color: white;
+}
+
+/* Modal Body Text */
+.modal-body {
+    padding: 20px;
+    max-height: 60vh; /* Allow scrolling if text is long */
+    overflow-y: auto;
+}
+
+#modalText {
+    white-space: pre-line; /* Preserves paragraphs/line breaks */
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 15px;
+    background: #f8f9fa;
+    text-align: right;
+    border-top: 1px solid #eee;
+}
+
+.btn-close {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.btn-close:hover {
+    background: #7f8c8d;
 }

@@ -34,7 +34,6 @@
                 <th>Steps</th>
                 <th>HR</th>
                 <th>BP</th>
-                <th style="width: 40%;">AI Daily Tip</th> </tr>
         </thead>
         <tbody>
             {% for log in logs %}
@@ -49,17 +48,9 @@
                 <td>{{ log.heart_rate }}</td>
                 <td>{{ log.bp_systolic }}/{{ log.bp_diastolic }}</td>
                 
-                <td style="font-size: 0.85em; color: #444; line-height: 1.3; text-align: left;">
-                    {% if log.daily_tip %}
-                        <i class="fas fa-comment-medical" style="color:#3498db;"></i>
-                        {{ log.daily_tip }}
-                    {% else %}
-                        <span style="color:#aaa;">No tip generated</span>
-                    {% endif %}
-                </td>
             </tr>
             {% else %}
-            <tr><td colspan="5" class="empty-cell">No daily logs found. Start tracking today!</td></tr>
+            <td>No history logs found.</td>
             {% endfor %}
         </tbody>
     </table>
