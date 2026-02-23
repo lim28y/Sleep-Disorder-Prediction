@@ -35,7 +35,7 @@ The application integrates traditional Machine Learning with a local Large Langu
 4. **Weekly Recommendation Generation (LLM):**  Llama 3.2 model processes the user's 7-day metrics alongside the retrieved RAG context. It then generates a personalized, bulleted weekly sleep hygiene report to help the user maintain or improve their habits.
 5. **Visualization & Alerts:** The weekly prediction results, AI-generated advice, and historical health metrics are displayed on the interactive web dashboard. If a high-risk disorder is consistently predicted across multiple weeks, the system triggers a critical health alert.
 
-## User Interface
+## 💻 User Interface
 **DAILY LOG INTERFACE:**
 
 <img width="1919" height="934" alt="Daily Log Interface" src="https://github.com/user-attachments/assets/fcca688e-69af-4a7b-9b8b-0c27df48f6dd" />
